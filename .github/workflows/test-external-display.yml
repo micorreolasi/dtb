@@ -1,0 +1,68 @@
+name: 🖥️ Test External Display - VisualDTB
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  test-dual-screen:
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Instalar XcodeGen
+        run: brew install xcodegen
+
+      - name: 🏗️ Generar Proyecto Xcode
+        run: xcodegen generate
+
+      - name: 📱 Crear simulador iPad
+        run: |
+          RUNTIME=$(xcrun simctl list runtimes iOS -j | python3 -c "import json,sys; runtimes = json.load(sys.stdin)['runtimes']; print([r['identifier'] for r in runtimes if r['isAvailable']][-1])")
+          DEVICE_ID=$(xcrun simctl create "iPadTest" "iPad (10th generation)" "$RUNTIME")
+          echo "DEVICE_ID=$DEVICE_ID" >> $GITHUB_ENV
+
+      - name: 🚀 Arrancar simulador
+        run: xcrun simctl boot $DEVICE_ID && xcrun simctl bootstatus $DEVICE_ID
+
+      - name: 🔨 Compilar VisualDTB
+        run: |
+          xcodebuild build \
+            -project VisualDTB.xcodeproj \
+            -scheme VisualDTB \
+            -destination "id=$DEVICE_ID" \
+            -allowProvisioningUpdates \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: 📲 Instalar App en Simulador
+        run: |
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "VisualDTB.app" -type d | head -1)
+          xcrun simctl install $DEVICE_ID "$APP_PATH"
+
+      - name: ▶️ Abrir la App
+        run: |
+          xcrun simctl launch $DEVICE_ID com.visualdtb.VisualDTB
+          sleep 5
+
+      - name: 📸 Captura 1 - App en iPad (Controles)
+        run: xcrun simctl io $DEVICE_ID screenshot screenshot_1_ipad.png
+
+      - name: 📺 Simular conexión de TV externa (HDMI)
+        run: |
+          xcrun simctl io $DEVICE_ID addExternalDisplay 1920 1080 60
+          sleep 5
+
+      - name: 📸 Captura 2 - Pantalla de TV Externa
+        run: xcrun simctl io $DEVICE_ID screenshot screenshot_2_dual_screen.png
+
+      - name: 📦 Subir resultados
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visualdtb-capturas
+          path: screenshot_*.png
+          retention-days: 7
