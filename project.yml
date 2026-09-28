@@ -1,6 +1,7 @@
 name: VisualDTB
 options:
   bundleIdPrefix: com.visualdtb
+  xcodeVersion: "15.0"
 targets:
   VisualDTB:
     type: application
@@ -19,4 +20,4 @@ targets:
         INFOPLIST_KEY_UIApplicationSupportsMultipleScenes: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         SWIFT_VERSION: 5.0
-        TARGETED_DEVICE_FAMILY: "2" # 2 = iPad
+        TARGETED_DEVICE_FAMILY: "2"
