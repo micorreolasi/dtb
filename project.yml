@@ -1,0 +1,22 @@
+name: VisualDTB
+options:
+  bundleIdPrefix: com.visualdtb
+targets:
+  VisualDTB:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: Core
+      - path: Features
+      - path: Navigation
+      - path: Projection
+      - path: VisualDTBApp.swift
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsMultipleScenes: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        SWIFT_VERSION: 5.0
+        TARGETED_DEVICE_FAMILY: "2" # 2 = iPad
